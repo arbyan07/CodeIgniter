@@ -1,20 +1,22 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS_18'
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'development', url: 'https://github.com/arbyan07/CodeIgniter'
             }
         }
-        stage('Install & Test') {
+
+        stage('Build') {
             steps {
-                sh 'npm install'
-                sh 'npm test'
+                echo 'No build needed for PHP project'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Add PHP unit tests here if needed'
             }
         }
     }
