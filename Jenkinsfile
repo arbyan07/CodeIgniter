@@ -2,21 +2,35 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'development', url: 'https://github.com/arbyan07/CodeIgniter'
-            }
-        }
-
         stage('Build') {
             steps {
-                echo 'No build needed for PHP project'
+                echo 'Building...'
+                // Contoh build command, misal:
+                sh 'docker build -t myapp:${GIT_COMMIT} .'
             }
         }
-
         stage('Test') {
             steps {
-                echo 'Add PHP unit tests here if needed'
+                echo 'Running tests...'
+                sh 'pytest tests/' // contoh menjalankan tes python
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            when {
+                expression {
+                    // Deploy hanya jika stage Test berhasil
+                    currentBuild.currentResult == 'SUCCESS'
+                }
+            }
+            steps {
+                echo 'Deploying to Kubernetes staging...'
+
+                // Login ke cluster Kubernetes (pastikan kubeconfig sudah disiapkan)
+                sh '''
+                kubectl config use-context my-staging-cluster-context
+                kubectl set image deployment/myapp-deployment myapp=myregistry/myapp:${GIT_COMMIT} -n staging
+                kubectl rollout status deployment/myapp-deployment -n staging
+                '''
             }
         }
     }
